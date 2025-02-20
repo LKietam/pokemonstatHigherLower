@@ -1,0 +1,12 @@
+directories:
+  output: dist
+  buildResources: build
+appId: com.example.pokemonstatgame
+productName: Pokemon Stat Game
+win:
+  target: nsis
+files:
+  - filter:
+      - index.html
+      - main.js
+electronVersion: 30.5.1
