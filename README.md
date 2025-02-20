@@ -1,4 +1,5 @@
 # Pokémon Stats Higher or Lower Game
+![image](https://github.com/user-attachments/assets/35ad2710-a577-42ef-aea3-7537a447112c)
 
 ## Overview
 The **Pokémon Stats Higher or Lower Game** is a simple yet engaging game where players compare Pokémon stats to determine which Pokémon has the higher value. The game uses the PokéAPI to fetch real-time Pokémon data and dynamically updates as users make choices.
@@ -61,5 +62,3 @@ This project is open-source and available under the **MIT License**.
 - Developed using **HTML, CSS, JavaScript, and Electron**.
 - Pokémon data sourced from [PokéAPI](https://pokeapi.co/).
 - Inspired by classic higher/lower comparison games.
-
-![image](https://github.com/user-attachments/assets/a2d8cee0-50f5-492c-a8cc-c6769f9493f5)
