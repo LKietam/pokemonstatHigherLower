@@ -3,53 +3,14 @@
 <head>
     <title>Pokemon Stat Game</title>
     <style>
-        /* Define CSS variables for light and dark modes */
-        :root {
-            /* Dark mode (default) */
-            --background-color: #1a1a1a;
-            --text-color: #ffffff;
-            --card-background: #2d2d2d;
-            --border-color: #666666;
-            --stat-bar-background: #444444;
-            --message-color: #ffffff;
-        }
-        /* Light mode overrides */
-        [data-theme="light"] {
-            --background-color: #f0f0f0;
-            --text-color: #000000;
-            --card-background: #ffffff;
-            --border-color: #333333;
-            --stat-bar-background: #dddddd;
-            --message-color: #000000;
-        }
         body {
             font-family: Arial, sans-serif;
             display: flex;
             flex-direction: column;
             align-items: center;
-            background-color: var(--background-color);
-            color: var(--text-color);
+            background-color: #f0f0f0;
             height: 100vh;
             margin: 0;
-            transition: background-color 0.3s, color 0.3s;
-        }
-        .toggle-container {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-        }
-        #theme-toggle {
-            padding: 8px 16px;
-            font-size: 14px;
-            cursor: pointer;
-            background-color: var(--card-background);
-            color: var(--text-color);
-            border: 1px solid var(--border-color);
-            border-radius: 5px;
-            transition: background-color 0.3s, color 0.3s;
-        }
-        #theme-toggle:hover {
-            background-color: var(--stat-bar-background);
         }
         .score-container {
             font-size: 24px;
@@ -67,21 +28,26 @@
             gap: 20px;
             margin: 20px;
             width: 100%;
-            max-width: 600px;
+            max-width: 400px;
+            height: auto;
+            aspect-ratio: 1 / 1;
             flex-grow: 1;
             justify-content: center;
+
         }
         .pokemon-card {
-            border: 3px solid var(--border-color);
+            border: 3px solid #333;
             border-radius: 10px;
             padding: 10px;
-            background-color: var(--card-background);
+            background-color: white;
             cursor: pointer;
-            transition: transform 0.2s, background-color 0.3s;
+            transition: transform 0.2s, left 0.3s ease, right 0.3s ease; /* Combined transition */
             display: flex;
-            flex-direction: row;
+            flex-direction: column;
             align-items: center;
+            text-align: center;
             gap: 20px;
+            position: relative;
         }
         .pokemon-card:hover {
             transform: scale(1.05);
@@ -101,12 +67,17 @@
             margin: 20px;
             height: 30px;
             text-align: center;
-            color: var(--message-color);
         }
         .stats-container {
             display: flex;
             flex-direction: column;
             gap: 5px;
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            height: auto;
+            aspect-ratio: 1 / 1;
+            flex-grow: 1;
         }
         .stat-row {
             display: flex;
@@ -116,7 +87,7 @@
         .stat-bar {
             width: 200px;
             height: 20px;
-            background-color: var(--stat-bar-background);
+            background-color: #ddd;
             position: relative;
         }
         .stat-fill {
@@ -130,10 +101,7 @@
         }
     </style>
 </head>
-<body data-theme="dark">
-    <div class="toggle-container">
-        <button id="theme-toggle">Switch to Light Mode</button>
-    </div>
+<body>
     <div class="score-container">
         <div>Score: <span id="score">0</span></div>
         <div>High Score: <span id="high-score">0</span></div>
@@ -145,44 +113,25 @@
                 <img class="pokemon-image" src="" alt="Pokemon Top">
                 <div class="pokemon-name"></div>
             </div>
-            <div class="stats-container" id="stats-0"></div>
+           
         </div>
         <div class="pokemon-card" data-index="1">
             <div>
                 <img class="pokemon-image" src="" alt="Pokemon Bottom">
                 <div class="pokemon-name"></div>
             </div>
-            <div class="stats-container" id="stats-1"></div>
         </div>
     </div>
     <div class="message" id="message"></div>
     <script>
+        // <div class="stats-container" id="stats-0"></div> put back later
+        //transition: transform 0.2s;
         let currentPokemon = [];
         let currentStat = '';
         let score = 0;
         let highScore = 0;
         let isClickable = true;
         let roundsAppeared = [0, 0];
-
-        // Theme toggle logic
-        const body = document.body;
-        const themeToggle = document.getElementById('theme-toggle');
-        const savedTheme = localStorage.getItem('theme') || 'dark';
-        body.setAttribute('data-theme', savedTheme);
-        updateToggleText();
-
-        themeToggle.addEventListener('click', () => {
-            const currentTheme = body.getAttribute('data-theme');
-            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-            body.setAttribute('data-theme', newTheme);
-            localStorage.setItem('theme', newTheme);
-            updateToggleText();
-        });
-
-        function updateToggleText() {
-            const currentTheme = body.getAttribute('data-theme');
-            themeToggle.textContent = currentTheme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode';
-        }
 
         async function fetchPokemonData(id) {
             const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`);
@@ -215,50 +164,96 @@
         }
 
         function createStatsDisplay(index) {
-            const container = document.getElementById(`stats-${index}`);
-            container.innerHTML = '';
+            const statContainer = document.createElement("div");
+            statContainer.classList.add("stats-container"); // Adjust class name if needed
             const statsOrder = ['hp', 'attack', 'defense', 'special-attack', 'special-defense', 'speed'];
             const labels = ['HP', 'Atk', 'Def', 'SpA', 'SpD', 'Spe'];
-            
+
             statsOrder.forEach((stat, i) => {
                 const value = currentPokemon[index].stats[stat];
-                
+
                 const row = document.createElement('div');
                 row.className = 'stat-row';
-                
+
                 const label = document.createElement('div');
                 label.className = 'stat-label';
                 label.textContent = `${labels[i]}: ${value}`;
-                
+
                 const bar = document.createElement('div');
                 bar.className = 'stat-bar';
-                
+
                 const fill = document.createElement('div');
                 fill.className = 'stat-fill';
                 fill.style.width = `${(value / 255) * 100}%`;
                 fill.style.backgroundColor = getStatColor(value);
-                
+
                 bar.appendChild(fill);
                 row.appendChild(label);
                 row.appendChild(bar);
-                container.appendChild(row);
+                statContainer.appendChild(row);
             });
+
+            const card = document.querySelectorAll('.pokemon-card')[index];
+            card.appendChild(statContainer);
+
+            // Transition effect (move in and fade)
+            statContainer.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
+            statContainer.style.transform = 'translateX(-100%)';
+            statContainer.style.opacity = '0';
+
+            setTimeout(() => {
+                statContainer.style.transform = 'translateX(0)';
+                statContainer.style.opacity = '1';
+            }, 10);
         }
 
-        function updateDisplay(showStats = false, keepIndex = -1) {
+
+        function updateDisplay(showStats = false, keepIndex = -1) { //
             document.querySelectorAll('.pokemon-card').forEach((card, index) => {
                 const pokemon = currentPokemon[index];
                 card.querySelector('.pokemon-image').src = pokemon.image;
                 card.querySelector('.pokemon-name').textContent = pokemon.name.charAt(0).toUpperCase() + pokemon.name.slice(1);
                 if (showStats) {
                     createStatsDisplay(index);
-                } else if (index !== keepIndex) {
+                }/* else if (index !== keepIndex) {
                     document.getElementById(`stats-${index}`).innerHTML = '';
-                }
+                }*/
             });
             document.getElementById('current-stat').textContent = currentStat.replace('-', ' ');
             document.getElementById('score').textContent = score;
             document.getElementById('high-score').textContent = highScore;
+        }
+        
+        function moveCards(moved = false, reverse = false) {
+            const card1 = document.querySelector('div.pokemon-card[data-index="0"]');
+            const card2 = document.querySelector('div.pokemon-card[data-index="1"]');
+
+            if (moved) {
+                // Move the cards further to the left (by 400px) using translateX
+                card1.style.transform = "translateX(-225px) translateY(338px)";
+                card2.style.transform = "translateX(+225px) translateY(-338px)";
+                // Call the function to log the positions
+            } else if (reverse) {
+                // Move the cards back to the original position
+                card1.style.transform = "translateX(0) translateY(0)";
+                card2.style.transform = "translateX(0) translateY(0)"; //origy = 486
+            }
+        }
+        
+        function moveStatContainers(remove = false) {
+            const statContainers = document.querySelectorAll('.stats-container');
+
+            statContainers.forEach((container) => {
+                if (remove) {
+                    // Apply transition to remove
+                    container.style.transform = 'translateX(100%)';
+                    container.style.opacity = '0';
+                    setTimeout(() => container.remove(), 300); // Remove after transition
+                } else {
+                    container.style.transform = 'translateX(0)';
+                    container.style.opacity = '1';
+                }
+            });
         }
 
         async function initializeGame() {
@@ -268,11 +263,13 @@
             ];
             currentStat = selectNewStat();
             updateDisplay();
+            
 
             document.querySelectorAll('.pokemon-card').forEach(card => {
                 card.addEventListener('click', async (e) => {
                     if (!isClickable) return;
                     isClickable = false;
+                    
                     const selectedIndex = parseInt(card.dataset.index);
 
                     const valueSelected = currentPokemon[selectedIndex].stats[currentStat];
@@ -292,28 +289,37 @@
                     document.getElementById('score').textContent = score;
                     document.getElementById('high-score').textContent = highScore;
                     
-                    updateDisplay(true); // Show stats for both
-
                     setTimeout(async () => {
-                        document.getElementById('message').textContent = '';
+                        moveCards(true,false)
+                        moveStatContainers(false);
+                    }, 200);
+                    
+                    updateDisplay(true); // Show stats for both
+                    setTimeout(async () => {
 
-                        const higherIndex = valueSelected >= valueOther ? selectedIndex : 1 - selectedIndex;
-                        const lowerIndex = 1 - higherIndex;
+                            document.getElementById('message').textContent = '';
 
-                        if (roundsAppeared[higherIndex] >= 2) {
-                            currentPokemon[higherIndex] = await fetchPokemonData(getRandomPokemonId());
-                            roundsAppeared[higherIndex] = 0;
-                            updateDisplay(false, -1);
-                        } else {
-                            roundsAppeared[higherIndex]++;
-                            currentPokemon[lowerIndex] = await fetchPokemonData(getRandomPokemonId());
-                            roundsAppeared[lowerIndex] = 0;
-                            updateDisplay(false, higherIndex);
-                        }
+                            const higherIndex = valueSelected >= valueOther ? selectedIndex : 1 - selectedIndex;
+                            const lowerIndex = 1 - higherIndex;
 
-                        currentStat = selectNewStat();
-                        isClickable = true;
-                    }, 1500);
+                            if (roundsAppeared[higherIndex] >= 2) {
+                                currentPokemon[higherIndex] = await fetchPokemonData(getRandomPokemonId());
+                                roundsAppeared[higherIndex] = 0;
+                                // If the higher Pokémon is replaced, don't keep its stats
+                                //updateDisplay(false, -1);
+                            } else {
+                                roundsAppeared[higherIndex]++;
+                                // Keep the stats of the higher Pokémon
+                                currentPokemon[lowerIndex] = await fetchPokemonData(getRandomPokemonId());
+                                roundsAppeared[lowerIndex] = 0;
+                                //updateDisplay(false, higherIndex);
+                            }
+                            //updateDisplay(false)
+                            currentStat = selectNewStat();
+                            isClickable = true;
+                            moveStatContainers(true);
+                            moveCards(false,true)
+                    }, 4000);
                 });
             });
         }
